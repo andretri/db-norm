@@ -26,6 +26,28 @@ def SplitInput(inpt):
 	return deps
 
 
+def __SplitInput(inpt):
+	deps = {}
+	dps = inpt.split(' ')
+	for dp in dps:
+		key, res = dp.split('-')
+		for k in [key]:
+			res = [tmp for tmp in list(res)]
+			try:
+				deps[k] = deps[k].union(set(res))
+				#print deps
+			except KeyError as err:
+				deps[k] = set(res)
+	return deps
+
+
+def __set__(__str__):
+  tmp = set()
+  for char in __str__:
+    tmp = tmp.union(char)
+  return tmp
+
+
 def BuildGraph(grh, cols):
 	graph = SplitInput(grh)
 	for i in range(cols):
@@ -93,7 +115,8 @@ def CatNF(cands, deps):
 	#print keys
 	#print results
 	
-	deps = SplitInput(deps)
+	deps = __SplitInput(deps)
+	#print deps
 	cand = cands[0]
 # 1-NF Check is redundant
 	nf2 = True
@@ -103,7 +126,7 @@ def CatNF(cands, deps):
 
 # 2-NF Check
 	for key in deps:
-		if (set(key) < cand and len(cand.intersection(deps[key])) == 0 ):
+		if (__set__(key) < cand and len(cand.intersection(deps[key])) == 0 ):
 			nf2 = False
 			cause = "%s -> %s" %(key, deps[key])
 			break
@@ -114,9 +137,9 @@ def CatNF(cands, deps):
 
 # Boyce-Codd Normal Form Check
 	if(nf2 and nf3):
-		print cands
+		#print cands
 		for key in deps:
-			if (set(key) not in cands):
+			if (__set__(key) not in cands):
 				bcnf = False
 				cause = "%s -> %s" %(key, deps[key])
 				break
@@ -135,10 +158,12 @@ def CatNF(cands, deps):
 
 
 def __3NF__(candKey, deps):
-	res = deps[next(iter(candKey))]
+	#res = deps[next(iter(candKey))]
+	#print ''.join(list(candKey))
+	res = deps[''.join(list(candKey))]
 	for key in res:
 		try:
-			tmp = deps[key].union(set(key))
+			tmp = deps[key].union(__set__(key))
 			if (tmp < res):
 				return False, "%s -> %s" %(key, deps[key])
 				break
